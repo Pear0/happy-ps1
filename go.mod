@@ -1,4 +1,4 @@
-module github.com/Pear0/hps1
+module github.com/Pear0/happy-ps1
 
 go 1.15
 

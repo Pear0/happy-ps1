@@ -93,6 +93,7 @@ func getMounts() ([]syscall.Statfs_t, error) {
 }
 
 func GetMountForPath(path string) (MountInfo, error) {
+	defer NewTimer("mount info").Done()
 	var fs syscall.Statfs_t
 
 	err := syscall.Statfs(path, &fs)

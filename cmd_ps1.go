@@ -4,14 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/Pear0/hps1"
-	"github.com/Pear0/hps1/integrations"
+	"github.com/Pear0/happy-ps1/hps1"
+	"github.com/Pear0/happy-ps1/integrations"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"io"
 	"math"
 	"os"
+	"time"
 )
+
+var programStartTime = time.Now()
 
 var ps1LastExitCode int
 
@@ -49,7 +52,12 @@ func handlePs1Command(cmd *cobra.Command, args []string) {
 
 	ctx := context.Background()
 
-	component, err := constructComponents()
+	wd, err := os.Getwd()
+	if err != nil {
+		fatalPs1Error(err)
+	}
+
+	component, err := ConstructComponents(wd)
 	if err != nil {
 		fatalPs1Error(err)
 	}
@@ -62,13 +70,7 @@ func handlePs1Command(cmd *cobra.Command, args []string) {
 	_, _ = io.Copy(os.Stdout, &lines)
 }
 
-func constructComponents() (hps1.Renderer, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		// this is a critical error
-		return nil, err
-	}
-
+func ConstructComponents(wd string) (hps1.Renderer, error) {
 	mnt, err := integrations.GetMountForPath(wd)
 	if err != nil {
 		warnPs1Error(err)
@@ -95,7 +97,7 @@ func constructComponents() (hps1.Renderer, error) {
 		hps1.Color(color.New(color.FgHiBlue, color.Bold)).Compose(hps1.Group{
 			hps1.String(hps1.PrettifyPath(wd, 2, 25)),
 		}),
-		hps1.Color(color.New(color.FgRed)).Compose(hps1.Group{
+		hps1.Color(color.New(color.FgHiRed, color.Bold)).Compose(hps1.Group{
 			func() hps1.Renderer {
 				if !mnt.IsRemote {
 					return hps1.Group{
@@ -106,6 +108,13 @@ func constructComponents() (hps1.Renderer, error) {
 					return hps1.Empty()
 				}
 			}(),
+		}),
+		hps1.StringFunc(func(ctx context.Context) (string, error) {
+			if os.Getenv("HPS1_TIME") != "" {
+				return fmt.Sprintf("(%s)", time.Since(programStartTime).String()), nil
+			} else {
+				return "", nil
+			}
 		}),
 		hps1.String("$ "),
 	}, nil

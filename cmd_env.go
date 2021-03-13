@@ -18,7 +18,7 @@ var envCmd = &cobra.Command{
 
 		fmt.Println("# this output is meant to be interpreted by the current shell.")
 		for _, pair := range getEnvVars() {
-			fmt.Printf("export %s=%s\n", pair.Key, pair.Value)
+			fmt.Printf("export %s='%s'\n", pair.Key, pair.Value)
 		}
 
 	},

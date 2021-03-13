@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Pear0/hps1/integrations"
+	"github.com/Pear0/happy-ps1/integrations"
 	"github.com/spf13/cobra"
 )
 
