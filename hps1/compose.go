@@ -22,7 +22,9 @@ func (s appliedColor) Render(ctx context.Context, w io.Writer) error {
 		return nil
 	}
 
-	_, e := s.color.Fprint(w, out)
+	_, _ = w.Write([]byte("\x01"))
+	_, e := s.color.Fprint(w, "\x02"+out+"\x01")
+	_, _ = w.Write([]byte("\x02"))
 	return e
 }
 
