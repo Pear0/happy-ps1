@@ -7,10 +7,12 @@ import (
 	"github.com/Pear0/happy-ps1/hps1"
 	"github.com/Pear0/happy-ps1/integrations"
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"io"
 	"math"
 	"os"
+	"path"
 	"time"
 )
 
@@ -38,19 +40,38 @@ func GetLastExitCode() (int, bool) {
 }
 
 func fatalPs1Error(err error) {
-	fmt.Fprintf(os.Stderr, "happy-ps1 error: %s\n", err.Error())
+	_, _ = fmt.Fprintf(os.Stderr, "happy-ps1 error: %s\n", err.Error())
 	fmt.Printf(" $")
 	os.Exit(1)
 }
 
 func warnPs1Error(err error) {
-	fmt.Fprintf(os.Stderr, "happy-ps1 error: %s\n", err.Error())
+	_, _ = fmt.Fprintf(os.Stderr, "happy-ps1 error: %s\n", err.Error())
+}
+
+func createShellInfo() *hps1.ShellInfo {
+	shell := os.Getenv("SHELL")
+	if shell == "" {
+		return hps1.ShellUnknown
+	}
+
+	shellName := path.Base(shell)
+
+	if shellName == "zsh" {
+		return hps1.ShellZsh
+	} else if shellName == "bash" {
+		return hps1.ShellBash
+	} else {
+		warnPs1Error(errors.Errorf("unknown $SHELL %s -> %s\n", shell, shellName))
+		return hps1.ShellUnknown
+	}
 }
 
 func handlePs1Command(cmd *cobra.Command, args []string) {
 	var lines bytes.Buffer
 
 	ctx := context.Background()
+	ctx = hps1.WrapContextShellInfo(ctx, createShellInfo())
 
 	wd, err := os.Getwd()
 	if err != nil {

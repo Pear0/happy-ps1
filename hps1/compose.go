@@ -12,6 +12,7 @@ type appliedColor struct {
 }
 
 func (s appliedColor) Render(ctx context.Context, w io.Writer) error {
+	shellInfo := GetShellInfo(ctx)
 
 	out, err := RenderToString(ctx, s.r)
 	if err != nil {
@@ -22,9 +23,9 @@ func (s appliedColor) Render(ctx context.Context, w io.Writer) error {
 		return nil
 	}
 
-	_, _ = w.Write([]byte("\x01"))
-	_, e := s.color.Fprint(w, "\x02"+out+"\x01")
-	_, _ = w.Write([]byte("\x02"))
+	_, _ = w.Write([]byte(shellInfo.ShellPromptEscapeStart))
+	_, e := s.color.Fprint(w, shellInfo.ShellPromptEscapeEnd+out+shellInfo.ShellPromptEscapeStart)
+	_, _ = w.Write([]byte(shellInfo.ShellPromptEscapeEnd))
 	return e
 }
 

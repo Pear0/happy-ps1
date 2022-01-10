@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"strings"
 	"syscall"
 )
 
@@ -18,10 +19,15 @@ var rootCmd = &cobra.Command{
 		}
 
 		fmt.Printf("running new shell: %s\n", shell)
-		fmt.Printf("own location: %s\n", os.Args[0])
+		fmt.Printf("own location: %s\n\n", os.Args[0])
 
 		var newEnvs []string
-		newEnvs = append(newEnvs, os.Environ()...)
+
+		for _, kv := range os.Environ() {
+			if !strings.HasPrefix(kv, "PS1=") {
+				newEnvs = append(newEnvs, kv)
+			}
+		}
 
 		for _, pair := range getEnvVars() {
 			newEnvs = append(newEnvs, fmt.Sprintf("%s=%s", pair.Key, pair.Value))
